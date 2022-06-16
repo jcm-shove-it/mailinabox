@@ -75,6 +75,13 @@ then
 	fi
 fi
 
+# ### Set log retention policy.
+
+# Set the systemd journal log retention from infinite to 10 days,
+# since over time the logs take up a large amount of space.
+# (See https://discourse.mailinabox.email/t/journalctl-reclaim-space-on-small-mailinabox/6728/11.)
+tools/editconf.py /etc/systemd/journald.conf MaxRetentionSec=10day
+
 # ### Add PPAs.
 
 # We install some non-standard Ubuntu packages maintained by other
@@ -356,6 +363,7 @@ systemctl restart systemd-resolved
 rm -f /etc/fail2ban/jail.local # we used to use this file but don't anymore
 rm -f /etc/fail2ban/jail.d/defaults-debian.conf # removes default config so we can manage all of fail2ban rules in one config
 cat conf/fail2ban/jails.conf \
+    | sed "s/PUBLIC_IPV6/$PUBLIC_IPV6/g" \
 	| sed "s/PUBLIC_IP/$PUBLIC_IP/g" \
 	| sed "s#STORAGE_ROOT#$STORAGE_ROOT#" \
 	> /etc/fail2ban/jail.d/mailinabox.conf
